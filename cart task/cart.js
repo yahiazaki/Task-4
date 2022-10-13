@@ -1,87 +1,141 @@
 "use strict";
-//function getHoroscope() {}
+let products = [];
 
-const getHoroscope = function () {
-  //Get Values day, month, year
-  let day = Number(document.getElementById("day").value);
-  let month = Number(document.getElementById("month").value);
-  let year = Number(document.getElementById("year").value);
+const addProduct = function () {
+  const productName = document.getElementById("product-name").value;
+  const price = document.getElementById("price").value;
+  const quantity = document.getElementById("quantity").value;
 
-  //Validate day, month, year,
-  let isValidDate = validateDate(day, month, year);
-  if (isValidDate) {
-    //Get correct Horoscope
-    let horoscopeName = getHoroscopeName(day, month);
-    displayHoroscopeName(horoscopeName);
-    //Display correct horoscope
-  } else {
-    //Display error if exists
-    displayError();
+  if (!validateInputs(productName, price, quantity)) {
+    alert("Invalid Inputs");
+    return;
+  }
+  const prodcut = {
+    productName: productName,
+    price: price,
+    quantity: quantity,
+    getTotal: function () {
+      return this.price * this.quantity;
+    },
+  };
+  products.push(prodcut);
+
+  display();
+};
+
+const display = function () {
+  displayProducts();
+  displaySubTotal();
+  displayShipping();
+  displayTotal();
+};
+
+const displayProducts = function () {
+  document.getElementById("products").innerHTML = "";
+  products.forEach((p, i) => {
+    document.getElementById("products").innerHTML += ` <tr>
+    <td class="align-middle">
+      <img src="img/${p.productName}.jpg" alt="" style="width: 50px" />
+      ${p.productName}
+    </td>
+    <td class="align-middle">EGP ${p.price}</td>
+    <td class="align-middle">
+      <div
+        class="input-group quantity mx-auto"
+        style="width: 100px"
+      >
+        <div class="input-group-btn">
+          <button class="btn btn-sm btn-primary btn-minus" onclick="decQuantity(${i})">
+            <i class="fa fa-minus"></i>
+          </button>
+        </div>
+        <input
+          type="text"
+          class="form-control form-control-sm bg-secondary border-0 text-center"
+          value="${p.quantity}"
+        />
+        <div class="input-group-btn">
+          <button class="btn btn-sm btn-primary btn-plus" onclick="incQuantity(${i})">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </td>
+    <td class="align-middle">EGP ${p.getTotal()}</td>
+    <td class="align-middle">
+      <button class="btn btn-sm btn-danger" onclick="remove(${i})">
+        <i class="fa fa-times"></i>
+      </button>
+    </td>
+  </tr>`;
+  });
+};
+
+const displaySubTotal = function () {
+  document.getElementById("sub-total").innerHTML = `EGP ${calculateSubTotal()}`;
+};
+
+const displayShipping = function () {
+  let shipping = calculateShipping();
+  document.getElementById("shipping").innerHTML = `EGP ${shipping}`;
+};
+
+const calculateSubTotal = function () {
+  let total = 0;
+  //   for (let i = 0; i < products.length; i++) {
+  //     total += products[i].total;
+  //   }
+  //continue
+  //break
+  products.forEach((p) => {
+    total += p.getTotal();
+  });
+  return total;
+};
+
+const displayTotal = function () {
+  let total = calculateSubTotal() + calculateShipping();
+  document.getElementById("total").innerHTML = `EGP ${total}`;
+};
+
+const calculateShipping = function () {
+  return Math.round(calculateSubTotal() * 0.1);
+};
+
+/* ***************************************************************************************** */
+const isEmptyOrNull = function(str) {
+  return !str || str.trim() === '';
+};
+
+const validateInputs = function (productName, price, quantity) {
+  if(!(isEmptyOrNull(productName) || isEmptyOrNull(price) || isEmptyOrNull(quantity))) {
+    if (!(!(isNaN(productName)) || isNaN(price) || isNaN(quantity))) {
+      if(price < 0 || quantity <= 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+/* ***************************************************************************************** */
+
+const decQuantity = function (i) {
+  if (products[i].quantity > 1) {
+    products[i].quantity -= 1;
+    display();
   }
 };
 
-const validateDate = function (day, month, year) {
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
-  if (
-    day < 1 ||
-    month < 1 ||
-    year < 1900 ||
-    month > 12 ||
-    year > 2100 ||
-    day > 31
-  )
-    return false;
-  if (day > 30 && (month == 4 || month == 6 || month == 9 || month == 11)) {
-    return false;
-  }
-  if (day > 28 && month == 2 && year % 4 != 0) {
-    return false;
-  }
-  if (day > 29 && month == 2 && year % 4 == 0) {
-    return false;
-  }
-  return true;
+const incQuantity = function (i) {
+  products[i].quantity = Number(products[i].quantity) + 1;
+  display();
 };
 
-const displayError = function () {
-  document.getElementById("result").innerHTML =
-    "<strong style='color:red'>Please enter a valid date</strong>";
-};
-
-const displayHoroscopeName = function (name) {
-  document.getElementById("result").innerHTML =
-    "<strong style='color:green'>" + name + "</strong>";
-};
-
-/* ********************************************************************************* */
-const getHoroscopeName = function (day, month) {
-  if((day >= 21 && month == 3) || (day <= 19 && month == 4)) {
-    return "Aries";
-  }else if((day >= 20 && month == 4) || (day <= 20 && month == 5 )) {
-    return "Taurus";
-  }else if((day >= 21 && month == 5) || (day <= 20 && month == 6 )) {
-    return "Gemini";
-  }else if((day >= 21 && month == 6) || (day <= 22 && month == 7 )) {
-    return "Cancer";
-  }else if((day >= 23 && month == 7) || (day <= 22 && month == 8 )) {
-    return "Leo";
-  }else if((day >= 23 && month == 8) || (day <= 22 && month == 9 )) {
-    return "Virgo";
-  }else if((day >= 23 && month == 9) || (day <= 22 && month == 10 )) {
-    return "Libra";
-  }else if((day >= 23 && month == 10) || (day <= 21 && month == 11 )) {
-    return "Scorpio";
-  }else if((day >= 22 && month == 11) || (day <= 21 && month == 12 )) {
-    return "Sagittarius";
-  }else if((day >= 22 && month == 12) || (day <= 19 && month == 1 )) {
-    return "Capricorn";
-  }else if((day >= 20 && month == 1) || (day <= 18 && month == 2 )) {
-    return "Aquarius";
-  }else {
-    return "Pisces";
+const remove = function (i) {
+  if (confirm("Are you sure?")) {
+    products.splice(i, 1);
+    display();
   }
-};
-/* ********************************************************************************* */
-const calculateTax = function (amount) {
-  return amount * 0.14;
 };
